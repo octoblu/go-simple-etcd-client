@@ -5,24 +5,30 @@ import (
 	"github.com/coreos/etcd/client"
 )
 
-// EtcdClient lets your Get/Set from Etcd
-type EtcdClient struct {
+// EtcdClient interface lets your Get/Set from Etcd
+type EtcdClient interface {
+	Get(key string) (string, error)
+	Set(key, value string) error
+}
+
+// SimpleEtcdClient implements EtcdClient
+type SimpleEtcdClient struct {
 	etcd client.Client
 }
 
 // New constructs a new EtcdClient
-func New(etcdURI string) (*EtcdClient, error) {
+func New(etcdURI string) (EtcdClient, error) {
 	etcd, err := client.New(client.Config{
 		Endpoints: []string{etcdURI},
 	})
 	if err != nil {
 		return nil, err
 	}
-	return &EtcdClient{etcd}, nil
+	return &SimpleEtcdClient{etcd}, nil
 }
 
 // Get gets a value in Etcd
-func (etcdClient *EtcdClient) Get(key string) (string, error) {
+func (etcdClient *SimpleEtcdClient) Get(key string) (string, error) {
 	api := client.NewKeysAPI(etcdClient.etcd)
 	response, err := api.Get(context.Background(), key, nil)
 	if err != nil {
@@ -35,7 +41,7 @@ func (etcdClient *EtcdClient) Get(key string) (string, error) {
 }
 
 // Set sets a value in Etcd
-func (etcdClient *EtcdClient) Set(key, value string) error {
+func (etcdClient *SimpleEtcdClient) Set(key, value string) error {
 	api := client.NewKeysAPI(etcdClient.etcd)
 	_, err := api.Set(context.Background(), key, value, nil)
 	return err
