@@ -16,8 +16,8 @@ type SimpleEtcdClient struct {
 	etcd client.Client
 }
 
-// New constructs a new EtcdClient
-func New(etcdURI string) (EtcdClient, error) {
+// Dial constructs a new EtcdClient
+func Dial(etcdURI string) (EtcdClient, error) {
 	etcd, err := client.New(client.Config{
 		Endpoints: []string{etcdURI},
 	})
