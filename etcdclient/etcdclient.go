@@ -7,6 +7,7 @@ import (
 
 // EtcdClient interface lets your Get/Set from Etcd
 type EtcdClient interface {
+	Del(key string) error
 	Get(key string) (string, error)
 	Set(key, value string) error
 	Ls(directory string) ([]string, error)
@@ -27,6 +28,13 @@ func Dial(etcdURI string) (EtcdClient, error) {
 		return nil, err
 	}
 	return &SimpleEtcdClient{etcd}, nil
+}
+
+// Del deletes a key from Etcd
+func (etcdClient *SimpleEtcdClient) Del(key string) error {
+	api := client.NewKeysAPI(etcdClient.etcd)
+	_, err := api.Delete(context.Background(), key, nil)
+	return err
 }
 
 // Get gets a value in Etcd
