@@ -46,7 +46,7 @@ func (etcdClient *SimpleEtcdClient) Del(key string) error {
 // DelDir deletes a dir from Etcd
 func (etcdClient *SimpleEtcdClient) DelDir(key string) error {
 	api := client.NewKeysAPI(etcdClient.etcd)
-	_, err := api.Delete(context.Background(), key, &client.DeleteOptions{Dir: true})
+	_, err := api.Delete(context.Background(), key, &client.DeleteOptions{Dir: true, Recursive: true})
 	if err != nil {
 		if client.IsKeyNotFound(err) {
 			return nil
