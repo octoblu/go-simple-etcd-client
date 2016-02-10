@@ -8,6 +8,7 @@ import (
 // EtcdClient interface lets your Get/Set from Etcd
 type EtcdClient interface {
 	Del(key string) error
+	DelDir(key string) error
 	Get(key string) (string, error)
 	Set(key, value string) error
 	Ls(directory string) ([]string, error)
@@ -34,6 +35,18 @@ func Dial(etcdURI string) (EtcdClient, error) {
 func (etcdClient *SimpleEtcdClient) Del(key string) error {
 	api := client.NewKeysAPI(etcdClient.etcd)
 	_, err := api.Delete(context.Background(), key, nil)
+	if err != nil {
+		if client.IsKeyNotFound(err) {
+			return nil
+		}
+	}
+	return err
+}
+
+// DelDir deletes a dir from Etcd
+func (etcdClient *SimpleEtcdClient) DelDir(key string) error {
+	api := client.NewKeysAPI(etcdClient.etcd)
+	_, err := api.Delete(context.Background(), key, &client.DeleteOptions{Dir: true})
 	if err != nil {
 		if client.IsKeyNotFound(err) {
 			return nil
