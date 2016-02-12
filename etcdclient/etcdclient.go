@@ -1,6 +1,8 @@
 package etcdclient
 
 import (
+	"time"
+
 	"github.com/coreos/etcd/Godeps/_workspace/src/golang.org/x/net/context"
 	"github.com/coreos/etcd/client"
 )
@@ -11,6 +13,7 @@ type EtcdClient interface {
 	DelDir(key string) error
 	Get(key string) (string, error)
 	Set(key, value string) error
+	UpdateDirWithTTL(key string, ttl time.Duration) error
 	Ls(directory string) ([]string, error)
 	LsRecursive(directory string) ([]string, error)
 }
@@ -72,6 +75,13 @@ func (etcdClient *SimpleEtcdClient) Get(key string) (string, error) {
 func (etcdClient *SimpleEtcdClient) Set(key, value string) error {
 	api := client.NewKeysAPI(etcdClient.etcd)
 	_, err := api.Set(context.Background(), key, value, nil)
+	return err
+}
+
+// UpdateDirWithTTL updates a directory with a ttl value
+func (etcdClient *SimpleEtcdClient) UpdateDirWithTTL(key string, ttl time.Duration) error {
+	api := client.NewKeysAPI(etcdClient.etcd)
+	_, err := api.Set(context.Background(), key, "", &client.SetOptions{TTL: ttl, Dir: true, PrevExist: client.PrevExist})
 	return err
 }
 
