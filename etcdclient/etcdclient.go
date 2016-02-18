@@ -16,6 +16,7 @@ type EtcdClient interface {
 	UpdateDirWithTTL(key string, ttl time.Duration) error
 	Ls(directory string) ([]string, error)
 	LsRecursive(directory string) ([]string, error)
+	MkDir(directory string) error
 }
 
 // SimpleEtcdClient implements EtcdClient
@@ -115,6 +116,14 @@ func (etcdClient *SimpleEtcdClient) LsRecursive(directory string) ([]string, err
 	}
 
 	return nodesToStringSlice(response.Node.Nodes), nil
+}
+
+// MkDir creates an empty etcd directory
+func (etcdClient *SimpleEtcdClient) MkDir(directory string) error {
+	api := client.NewKeysAPI(etcdClient.etcd)
+	options := &client.SetOptions{Dir: true}
+	_, err := api.Set(context.Background(), directory, "", options)
+	return err
 }
 
 func nodesToStringSlice(nodes client.Nodes) []string {
