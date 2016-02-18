@@ -1,6 +1,7 @@
 package etcdclient
 
 import (
+	"fmt"
 	"time"
 
 	"github.com/coreos/etcd/Godeps/_workspace/src/golang.org/x/net/context"
@@ -121,9 +122,21 @@ func (etcdClient *SimpleEtcdClient) LsRecursive(directory string) ([]string, err
 // MkDir creates an empty etcd directory
 func (etcdClient *SimpleEtcdClient) MkDir(directory string) error {
 	api := client.NewKeysAPI(etcdClient.etcd)
-	options := &client.SetOptions{Dir: true}
-	_, err := api.Set(context.Background(), directory, "", options)
-	return err
+	results, err := api.Get(context.Background(), directory, nil)
+
+	if err != nil && !client.IsKeyNotFound(err) {
+		return err
+	}
+
+	if err != nil && client.IsKeyNotFound(err) {
+		_, err = api.Set(context.Background(), directory, "", &client.SetOptions{Dir: true, PrevExist: client.PrevIgnore})
+		return err
+	}
+
+	if !results.Node.Dir {
+		return fmt.Errorf("Refusing to overwrite key/value with a directory: %v", directory)
+	}
+	return nil
 }
 
 func nodesToStringSlice(nodes client.Nodes) []string {
