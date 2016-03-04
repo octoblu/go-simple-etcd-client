@@ -176,6 +176,9 @@ func (etcdClient *SimpleEtcdClient) WatchRecursive(directory string, onChange On
 		watcher := api.Watcher(directory, &client.WatcherOptions{Recursive: true, AfterIndex: afterIndex})
 		response, err := watcher.Next(context.Background())
 		if err != nil {
+			if err.(client.Error).Code == client.ErrorCodeEventIndexCleared {
+				continue
+			}
 			return err
 		}
 
