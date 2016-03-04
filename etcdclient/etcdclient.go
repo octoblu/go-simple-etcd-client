@@ -10,15 +10,40 @@ import (
 
 // EtcdClient interface lets your Get/Set from Etcd
 type EtcdClient interface {
+	// Del deletes a key from Etcd
 	Del(key string) error
+
+	// DelDir deletes a dir from Etcd
 	DelDir(key string) error
+
+	// Get gets a value in Etcd
 	Get(key string) (string, error)
+
+	// Set sets a value in Etcd
 	Set(key, value string) error
+
+	// UpdateDirWithTTL updates a directory with a ttl value
 	UpdateDirWithTTL(key string, ttl time.Duration) error
+
+	// Ls returns all the keys available in the directory
 	Ls(directory string) ([]string, error)
+
+	// LsRecursive returns all the keys available in the directory, recursively
 	LsRecursive(directory string) ([]string, error)
+
+	// MkDir creates an empty etcd directory
 	MkDir(directory string) error
+
+	// WatchRecursive watches a directory and calls the callback everytime something changes.
+	// The callback is called with the key of the thing that changed along with the value
+	// that the thing was changed to.
+	// This method only returns if there is an error
+	WatchRecursive(directory string, onChangeCallback OnChangeCallback) error
 }
+
+// OnChangeCallback is used for passing callbacks to
+// WatchRecursive
+type OnChangeCallback func(key, newValue string)
 
 // SimpleEtcdClient implements EtcdClient
 type SimpleEtcdClient struct {
@@ -137,6 +162,26 @@ func (etcdClient *SimpleEtcdClient) MkDir(directory string) error {
 		return fmt.Errorf("Refusing to overwrite key/value with a directory: %v", directory)
 	}
 	return nil
+}
+
+// WatchRecursive watches a directory and calls the callback everytime something changes.
+// The callback is called with the key of the thing that changed along with the value
+// that the thing was changed to.
+// This method only returns if there is an error
+func (etcdClient *SimpleEtcdClient) WatchRecursive(directory string, onChange OnChangeCallback) error {
+	api := client.NewKeysAPI(etcdClient.etcd)
+	afterIndex := uint64(0)
+
+	for {
+		watcher := api.Watcher(directory, &client.WatcherOptions{Recursive: true, AfterIndex: afterIndex})
+		response, err := watcher.Next(context.Background())
+		if err != nil {
+			return err
+		}
+
+		afterIndex = response.Index
+		onChange(response.Node.Key, response.Node.Value)
+	}
 }
 
 func nodesToStringSlice(nodes client.Nodes) []string {
