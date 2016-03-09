@@ -176,7 +176,7 @@ func (etcdClient *SimpleEtcdClient) WatchRecursive(directory string, onChange On
 		watcher := api.Watcher(directory, &client.WatcherOptions{Recursive: true, AfterIndex: afterIndex})
 		response, err := watcher.Next(context.Background())
 		if err != nil {
-			if err.(client.Error).Code == client.ErrorCodeEventIndexCleared {
+			if shouldIgnoreError(err) {
 				continue
 			}
 			return err
@@ -199,4 +199,13 @@ func nodesToStringSlice(nodes client.Nodes) []string {
 	}
 
 	return keys
+}
+
+func shouldIgnoreError(err error) bool {
+	switch err := err.(type) {
+	default:
+		return false
+	case *client.Error:
+		return err.Code == client.ErrorCodeEventIndexCleared
+	}
 }
