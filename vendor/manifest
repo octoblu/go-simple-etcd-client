@@ -1,0 +1,45 @@
+{
+	"version": 0,
+	"dependencies": [
+		{
+			"importpath": "github.com/coreos/etcd/client",
+			"repository": "https://github.com/coreos/etcd",
+			"revision": "a5172974daf14250e4b613d8747acc86fd2ecdb4",
+			"branch": "master",
+			"path": "/client",
+			"notests": true
+		},
+		{
+			"importpath": "github.com/coreos/etcd/pkg/pathutil",
+			"repository": "https://github.com/coreos/etcd",
+			"revision": "a5172974daf14250e4b613d8747acc86fd2ecdb4",
+			"branch": "master",
+			"path": "/pkg/pathutil",
+			"notests": true
+		},
+		{
+			"importpath": "github.com/coreos/etcd/pkg/types",
+			"repository": "https://github.com/coreos/etcd",
+			"revision": "a5172974daf14250e4b613d8747acc86fd2ecdb4",
+			"branch": "master",
+			"path": "/pkg/types",
+			"notests": true
+		},
+		{
+			"importpath": "github.com/ugorji/go/codec",
+			"repository": "https://github.com/ugorji/go",
+			"revision": "a396ed22fc049df733440d90efe17475e3929ccb",
+			"branch": "master",
+			"path": "/codec",
+			"notests": true
+		},
+		{
+			"importpath": "golang.org/x/net/context",
+			"repository": "https://go.googlesource.com/net",
+			"revision": "31df19d69da8728e9220def59b80ee577c3e48bf",
+			"branch": "master",
+			"path": "/context",
+			"notests": true
+		}
+	]
+}
